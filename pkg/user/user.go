@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
@@ -15,10 +16,8 @@ type User struct {
 }
 
 var (
-	ErrorFailedToFetchRecord     = "failed to fetch record"
-	ErrorFailedToFetchRecords    = "failed to fetch records"
-	ErrorFailedToUnmarshalRecrd  = "failed to unmarshal record"
-	ErrorFailedToUnmarshalRecrds = "failed to unmarshal records"
+	ErrorFailedToFetchRecord    = "failed to fetch record"
+	ErrorFailedToUnmarshalRecrd = "failed to unmarshal record"
 )
 
 func FetchUser(email string, tableName string, dynamoClient dynamodbiface.DynamoDBAPI) (*User, error) {
@@ -44,18 +43,33 @@ func FetchUser(email string, tableName string, dynamoClient dynamodbiface.Dynamo
 	return item, nil
 }
 
-func FetchUsers() ([]*User, error) {
+func FetchUsers(tableName string, dynamoClient dynamodbiface.DynamoDBAPI) ([]*User, error) {
+	input := &dynamodb.ScanInput{
+		TableName: aws.String(tableName),
+	}
+
+	result, err := dynamoClient.Scan(input)
+	if err != nil {
+		return nil, errors.New(ErrorFailedToFetchRecord)
+	}
+
+	items := new([]User)
+	err := dynamodbattribute.UnmarshalListOfMaps(result.Items, items)
+	if err != nil {
+		return nil, errors.New(ErrorFailedToUnmarshalRecrd)
+	}
+}
+
+func CreateUser(req events.APIGatewayProxyRequest, tableName string, dynamoClient dynamodbiface.DynamoDBAPI) (*User,
+	error) {
 
 }
 
-func CreateUser(user *User) {
+func UpdateUser(req events.APIGatewayProxyRequest, tableName string, dynamoClient dynamodbiface.DynamoDBAPI) (*User,
+	error) {
 
 }
 
-func UpdateUser() {
-
-}
-
-func DeleteUser() {
+func DeleteUser(req events.APIGatewayProxyRequest, tableName string, dynamoClient dynamodbiface.DynamoDBAPI) error {
 
 }
