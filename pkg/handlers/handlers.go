@@ -24,7 +24,7 @@ func GetUser(req events.APIGatewayProxyRequest, tableName string, dynamoClient d
 		}
 		return apiResponse(http.StatusOK, result)
 	} else {
-		result, err := user.FetchUser(email, tableName, dynamoClient)
+		result, err := user.FetchUsers(tableName, dynamoClient)
 		if err != nil {
 			return apiResponse(http.StatusBadRequest, ErrorBody{ErrorMsg: aws.String(err.Error())})
 		}
